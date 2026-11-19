@@ -415,6 +415,25 @@ il y a = es gibt, es ist, es sind | Ausdruck
 un CD / des CD = eine CD / CDs | Nomen
 bientôt = bald | Zeitangabe
 Ah, bon? = Ach ja? / Wirklich? | Ausdruck
+## Weitere Wörter
+maintenant = jetzt | Zeitangabe
+maman = Mama | Familie
+en allemand = auf Deutsch | Ausdruck
+allemand = deutsch | Adjektiv
+un gâteau = ein Kuchen | Nomen (m)
+des gâteaux = Kuchen (Mehrzahl) | Nomen, Plural mit -x
+À bientôt! = Bis bald! | Verabschiedung
+S'il te plaît! = Bitte! | Höflichkeit (zu einer Person, die man duzt)
+une bougie = eine Kerze | Nomen (f)
+une chambre = ein Zimmer | Nomen (f)
+## Verb: ranger
+ranger = aufräumen ; etwas aufräumen | Verb auf -er
+je range = ich räume auf | ranger
+tu ranges = du räumst auf | ranger
+il/elle/on range = er/sie/man räumt auf | ranger
+nous rangeons = wir räumen auf | ranger – mit e vor -ons!
+vous rangez = ihr räumt auf | ranger
+ils/elles rangent = sie räumen auf | ranger
 `;
 /* ============================ Ende Wortliste ============================ */
 
@@ -491,14 +510,19 @@ function norm(s){
 }
 function loose(s){
   return norm(s).normalize('NFD').replace(/[̀-ͯ]/g, '')
-    .replace(/œ/g, 'oe').replace(/æ/g, 'ae').replace(/ß/g, 'ss').replace(/'/g, '')
-    .replace(/\s+/g, ' ').trim();
+    .replace(/œ/g, 'oe').replace(/æ/g, 'ae').replace(/ß/g, 'ss')
+    .replace(/[' ]/g, '');                       // „s il te plait“ ≈ „s'il te plaît“
 }
 function variants(target){
   const set = new Set();
   const add = s => { const n = norm(s); if (n) set.add(n); };
   const noParen = target.replace(/\([^)]*\)/g, ' ');
-  [target, noParen].forEach(t => { add(t); t.split(/\/|,|\boder\b/).forEach(add); });
+  [target, noParen].forEach(t => {
+    add(t); t.split(/\/|,|\boder\b/).forEach(add);
+    // „il/elle/on range“ → auch „il range“, „elle range“, „on range“ (genauso „er/sie/man räumt auf“)
+    const m = t.trim().match(/^(\S+(?:\/\S+)+)\s+(.+)$/);
+    if (m) m[1].split('/').forEach(p => add(p + ' ' + m[2]));
+  });
   return [...set];
 }
 /* Liefert Ergebnis + die getroffene Lösung (damit z. B. „Joyeux anniversaire“ so vorgelesen wird, wie es eingegeben wurde) */
